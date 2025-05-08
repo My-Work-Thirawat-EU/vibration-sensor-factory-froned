@@ -1,17 +1,41 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import './sidebar.css';
 import { useAuth } from '@/context/AuthContext';
+import { getUserData } from '@/service/authService';
+import { User } from '@/interface/user';
 
 const Sidebar = () => {
     const pathname = usePathname();
-    const { logout } = useAuth();
+    const { logout, user: authUser } = useAuth();
+    const [userData, setUserData] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const data = await getUserData();
+                setUserData(data);
+                console.log('Fetched userData:', data);
+            } catch (error) {
+                console.error('Failed to fetch user data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (authUser) {
+            fetchUserData();
+        }
+        // Debug: log authUser
+        console.log('AuthContext user:', authUser);
+    }, [authUser]);
 
     const menuItems = [
-        { 
+        {
             icon: (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="7" height="7"></rect>
@@ -57,20 +81,20 @@ const Sidebar = () => {
             </div>
             {/* User Profile Section */}
             <div className="user-profile">
-                <img 
-                    src="https://ui-avatars.com/api/?name=John+Doe&background=4caf50&color=fff" 
+                <img
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.username || authUser?.username || 'User')}&background=4caf50&color=fff`}
                     alt="User Profile"
                 />
                 <div className="user-info">
-                    <h3>John Doe</h3>
-                    <p>Administrator</p>
+                    <h3>{userData?.username || authUser?.username || 'User'}</h3>
+                    <p>{userData?.organization || authUser?.organization || 'Organization'}</p>
                 </div>
             </div>
 
             <ul className="sidebar-menu">
                 {menuItems.map((item) => (
                     <li key={item.path}>
-                        <Link 
+                        <Link
                             href={item.path}
                             className={pathname === item.path ? 'active' : ''}
                         >
@@ -83,7 +107,17 @@ const Sidebar = () => {
             <div className="logout-container">
                 <div className="logout-button" onClick={handleLogout}>
                     <i>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            height="24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>

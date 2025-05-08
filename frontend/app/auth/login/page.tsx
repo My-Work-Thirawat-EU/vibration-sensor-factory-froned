@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { login } from "../../../service/authService";
+import { useAuth } from "@/context/AuthContext";
 
 //css
 import "./login.css";
@@ -10,6 +11,7 @@ import "../../../styles/globals.css";
 
 export default function LoginPage() {
     const router = useRouter();
+    const { syncAuth } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -27,6 +29,8 @@ export default function LoginPage() {
             }
 
             await login(username, password);
+            // Force a sync of auth state before navigation
+            syncAuth();
             router.push('/main/dashboard');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Login failed. Please try again.');

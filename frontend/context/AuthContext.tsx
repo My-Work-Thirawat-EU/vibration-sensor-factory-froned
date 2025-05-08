@@ -6,27 +6,44 @@ import {
   isAuthenticated as checkAuth,
   logout as authLogout,
   getCurrentUser,
+  getUserData,
 } from '@/service/authService';
+import { User } from '@/interface/user';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: any | null;
+  user: User | null;
   logout: () => void;
   isLoading: boolean;
+  syncAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const syncAuth = () => {
+  const syncAuth = async () => {
     const status = checkAuth();
     setIsAuthenticated(status);
-    setUser(status ? getCurrentUser() : null);
+    
+    if (status) {
+      try {
+        // Try to get fresh user data from the server
+        const userData = await getUserData();
+        setUser(userData);
+      } catch (error) {
+        // If server request fails, fall back to cached data
+        const cachedUser = getCurrentUser();
+        setUser(cachedUser);
+      }
+    } else {
+      setUser(null);
+    }
+    
     setIsLoading(false);
   };
 
@@ -67,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, logout, isLoading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, logout, isLoading, syncAuth }}>
       {children}
     </AuthContext.Provider>
   );

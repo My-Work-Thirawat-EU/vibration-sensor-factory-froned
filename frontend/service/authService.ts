@@ -81,6 +81,34 @@ export const getCurrentUser = (): User | null => {
   } catch {
     return null;
   }
+  
+};
+
+export const getUserData = async (): Promise<User> => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      throw new Error('No user data available');
+    }
+
+    const response = await axiosInstance.get('/api/users/' + currentUser.id);
+    let user = response.data;
+
+    // Patch: convert _id.$oid to id if needed
+    if (user._id && user._id.$oid) {
+      user.id = user._id.$oid;
+    }
+    // Fallback for username/organization
+    user.username = user.username || 'Unknown';
+    user.organization = user.organization || 'Unknown';
+
+    return user;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch user data');
+    }
+    throw error;
+  }
 };
 
 export const getToken = (): string | null => {

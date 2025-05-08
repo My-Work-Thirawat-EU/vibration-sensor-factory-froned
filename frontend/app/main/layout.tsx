@@ -3,7 +3,6 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import './sidebar.css';
 
 export default function MainLayout({
   children,
@@ -12,9 +11,9 @@ export default function MainLayout({
 }) {
   return (
     <ProtectedRoute>
-      <div className="flex min-h-screen bg-[#18181B]">
+      <div className="flex">
         <Sidebar />
-        <main className="flex-1 ml-[100px] p-4">
+        <main className="main-content">
           {children}
         </main>
       </div>
