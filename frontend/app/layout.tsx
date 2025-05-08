@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { Providers } from "./providers";
 import { fontSans } from "@/config/fonts";
 import clsx from "clsx";
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: "Login",
@@ -27,9 +28,11 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          {children}
-        </Providers>
+        <AuthProvider>
+          <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+            {children}
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );
